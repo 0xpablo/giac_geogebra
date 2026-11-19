@@ -5640,24 +5640,24 @@ namespace giac {
   
 
   // solve triangular system l*a=y where l is the lower part of a lu decomp 
-  void linsolve_l(const matrice & m,const vecteur & y,vecteur & a){
+  bool linsolve_l(const matrice & m,const vecteur & y,vecteur & a){
     // l*a=y: a1=y1, a2=y2-m_21*a1, ..., ak=yk-sum_{j=1..k-1}(m_kj*aj)
     int n=int(y.size());
     if (m.size()<size_t(n)){
       gensizeerr("Invalid lower triangular matrix");
       a.clear();
-      return;
+      return false;
     }
     for (int k=0;k<n;++k){
       if (m[k].type!=_VECT || !m[k]._VECTptr || m[k]._VECTptr->size()<=size_t(k)){
         gensizeerr("Invalid lower triangular matrix");
         a.clear();
-        return;
+        return false;
       }
     }
     if (!n){
       a.clear();
-      return;
+      return true;
     }
     a.resize(n);
     gen * astart=&a[0];
@@ -5670,10 +5670,11 @@ namespace giac {
 	res -= (*mkj)*(*aj); 
       *ak=res/(*mkj);
     }
+    return true;
   }
 
   // solve upper triangular system m*y=a
-  void linsolve_u(const matrice & m,const vecteur & y,vecteur & a){
+  bool linsolve_u(const matrice & m,const vecteur & y,vecteur & a){
     // u*[a0,..,an-1]=[y0,...,yn]
     // a_{n-1}=y_{n-1}/u_{n-1,n-1}
     // a_{n-2}=(y_{n-2}-u_{n-2,n-1}*a_{n-1})/u_{n-2,n-2}
@@ -5683,13 +5684,13 @@ namespace giac {
     if (m.size()<size_t(n)){
       gensizeerr("Invalid upper triangular matrix");
       a.clear();
-      return;
+      return false;
     }
     for (int k=0;k<n;++k){
       if (m[k].type!=_VECT || !m[k]._VECTptr || m[k]._VECTptr->size()<size_t(n)){
         gensizeerr("Invalid upper triangular matrix");
         a.clear();
-        return;
+        return false;
       }
     }
     a.resize(n);
@@ -5701,6 +5702,7 @@ namespace giac {
       }
       *colj=res/(*mkj);
     }
+    return true;
   }
 
   gen _linsolve(const gen & args,GIAC_CONTEXT){
@@ -5751,8 +5753,8 @@ namespace giac {
 	    return gendimerr(contextptr);
 	}
 	else {
-	  linsolve_l(*L._VECTptr,c,y);
-	  linsolve_u(*U._VECTptr,y,x);
+	  if (!linsolve_l(*L._VECTptr,c,y) || !linsolve_u(*U._VECTptr,y,x))
+	    return gendimerr(contextptr);
 	}
 	if (!mat)
 	  return x;
@@ -5788,7 +5790,8 @@ namespace giac {
 	  if (lower){
 	    for (unsigned i=0;i<b.size();++i){
 	      vecteur y(n);
-	      linsolve_l(m,*b[i]._VECTptr,y);
+	      if (!linsolve_l(m,*b[i]._VECTptr,y))
+	        return gendimerr(contextptr);
 	      if (!mat)
 		return y;
 	      res.push_back(y);
@@ -5807,7 +5810,8 @@ namespace giac {
 	if (upper){
 	  for (unsigned i=0;i<b.size();++i){
 	    vecteur y(n);
-	    linsolve_u(m,*b[i]._VECTptr,y);
+	    if (!linsolve_u(m,*b[i]._VECTptr,y))
+	      return gendimerr(contextptr);
 	    if (!mat)
 	      return y;
 	    res.push_back(y);

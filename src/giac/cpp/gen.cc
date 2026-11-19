@@ -12613,7 +12613,10 @@ namespace giac {
         pthread_mutex_unlock(&parse_mutex);
 #endif
 #ifndef NO_STDEXCEPT
-    } catch (std::runtime_error &e) {
+    } catch (std::runtime_error &) {
+      parsed_gen(0,contextptr);
+      parse_result=undef;
+      res=0;
 #ifdef HAVE_LIBPTHREAD
       if (!locked)
         pthread_mutex_unlock(&parse_mutex);
