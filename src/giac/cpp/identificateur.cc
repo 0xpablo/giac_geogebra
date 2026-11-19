@@ -74,10 +74,10 @@ namespace giac {
 
   bool identifier_name_is_plausible(const identificateur & identifier){
     const char * id_name = identifier.id_name;
-    if (!id_name)
-      return false;
-    bool plausible = (uintptr_t)id_name >= 0x1000;
-    if (plausible && identifier.ref_count_ptr){
+    bool plausible = id_name && identifier.ref_count_ptr &&
+      (uintptr_t)id_name >= 0x1000 &&
+      (uintptr_t)identifier.ref_count_ptr >= 0x1000;
+    if (plausible){
       // Check the owned name and the ref-count record before reading any
       // character. The previous guard dereferenced a suspect pointer while
       // trying to validate it, making the guard itself a common crash site.
