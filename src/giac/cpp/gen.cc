@@ -16813,6 +16813,26 @@ void sprint_double(char * s,double d){
   }
 
   bool stack_check(GIAC_CONTEXT){
+#if defined(__APPLE__) && defined(HAVE_LIBPTHREAD)
+    // The embedding app does not call stack_check_init, and Giac can recurse
+    // on several worker threads. Use the bounds of the current thread rather
+    // than a process-global address captured on a different thread.
+    static __thread size_t stack_bottom = 0;
+    if (!stack_bottom){
+      pthread_t thread = pthread_self();
+      size_t stack_top = (size_t)pthread_get_stackaddr_np(thread);
+      size_t stack_size = pthread_get_stacksize_np(thread);
+      if (stack_top >= stack_size)
+        stack_bottom = stack_top - stack_size;
+    }
+    if (stack_bottom){
+      int frame;
+      size_t current = (size_t)&frame;
+      const size_t reserved_stack = 64 * 1024;
+      if (current < stack_bottom || current - stack_bottom < reserved_stack)
+        return false;
+    }
+#endif
     if (max_stack_size==0) // not initialized, no check
       return true;
     int dummy;
