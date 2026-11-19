@@ -8854,6 +8854,13 @@ namespace giac {
       return fabs(a._FLOAT_val-b._FLOAT_val)<giac_float(epsilon(contextptr));
     case _IDNT__IDNT:
       // return a.subtype==b.subtype && (a._IDNTptr->name==b._IDNTptr->name || *a._IDNTptr->name==*b._IDNTptr->name);
+      if (a._IDNTptr==b._IDNTptr)
+	return true;
+      if (!a._IDNTptr || !b._IDNTptr)
+	return false;
+      if (!identifier_name_is_plausible(*a._IDNTptr) ||
+	  !identifier_name_is_plausible(*b._IDNTptr))
+	return false;
       return a._IDNTptr->id_name==b._IDNTptr->id_name || strcmp(a._IDNTptr->id_name,b._IDNTptr->id_name)==0;
     case _SYMB__SYMB:
       if (a._SYMBptr==b._SYMBptr)
