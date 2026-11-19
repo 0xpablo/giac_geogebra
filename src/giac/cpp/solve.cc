@@ -1609,6 +1609,10 @@ namespace giac {
   }
 
   static void clean(gen & e,const identificateur & x,GIAC_CONTEXT){
+    if (!stack_check(contextptr)){
+      e=gensizeerr(gettext("Too many recursion levels"));
+      return;
+    }
     if (e.type!=_SYMB)
       return;
 #if 1
@@ -5639,6 +5643,22 @@ namespace giac {
   void linsolve_l(const matrice & m,const vecteur & y,vecteur & a){
     // l*a=y: a1=y1, a2=y2-m_21*a1, ..., ak=yk-sum_{j=1..k-1}(m_kj*aj)
     int n=int(y.size());
+    if (m.size()<size_t(n)){
+      gensizeerr("Invalid lower triangular matrix");
+      a.clear();
+      return;
+    }
+    for (int k=0;k<n;++k){
+      if (m[k].type!=_VECT || !m[k]._VECTptr || m[k]._VECTptr->size()<=size_t(k)){
+        gensizeerr("Invalid lower triangular matrix");
+        a.clear();
+        return;
+      }
+    }
+    if (!n){
+      a.clear();
+      return;
+    }
     a.resize(n);
     gen * astart=&a[0];
     *astart=y[0]/m[0][0];
@@ -5660,6 +5680,18 @@ namespace giac {
     // ...
     // a_k=(y_{k}-sum_{j=k+1..n-1} u_{k,j}a_j)/u_{k,k}
     int n=int(y.size());
+    if (m.size()<size_t(n)){
+      gensizeerr("Invalid upper triangular matrix");
+      a.clear();
+      return;
+    }
+    for (int k=0;k<n;++k){
+      if (m[k].type!=_VECT || !m[k]._VECTptr || m[k]._VECTptr->size()<size_t(n)){
+        gensizeerr("Invalid upper triangular matrix");
+        a.clear();
+        return;
+      }
+    }
     a.resize(n);
     for (int k=n-1;k>=0;--k){
       gen res=y[k];
@@ -6148,6 +6180,10 @@ namespace giac {
   }
 
   bool has_num_coeff(const gen & e){
+    if (!stack_check(context0)){
+      gensizeerr(gettext("Too many recursion levels"));
+      return false;
+    }
     switch (e.type){
     case _ZINT: case _INT_: case _IDNT: case _USER:
       return false;

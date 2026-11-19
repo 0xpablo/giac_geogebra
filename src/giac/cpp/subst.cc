@@ -1515,6 +1515,10 @@ namespace giac {
   // Complete a list of prime together factors primeargs such that
   // a is a product of these factors
   static void decompose(const gen &a_orig,vecteur & primeargs,vecteur & extargs,int begin,const vecteur & vars,GIAC_CONTEXT){
+    if (!stack_check(contextptr)){
+      gensizeerr(gettext("Too many recursion levels"));
+      return;
+    }
     if (is_unit(a_orig))
       return;
     if (is_algebraic_extension(a_orig)){

@@ -3802,6 +3802,10 @@ namespace giac {
 
   // compute simultaneously real and imaginary part
   void reim(const gen & g,gen & r,gen & i,GIAC_CONTEXT){
+    if (!stack_check(contextptr)){
+      r=i=gensizeerr(gettext("Too many recursion levels"));
+      return;
+    }
     switch (g.type ) {
     case _INT_: case _DOUBLE_: case _FLOAT_: case _ZINT: case _REAL: case _STRNG:
       r=g;
@@ -12529,6 +12533,8 @@ namespace giac {
   }
   
   static gen aplatir_plus_only(const gen & g){
+    if (!stack_check(context0))
+      return gensizeerr(gettext("Too many recursion levels"));
     if (g.type==_VECT){
       const vecteur & v=*g._VECTptr;
       vecteur w(v);
