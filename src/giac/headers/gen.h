@@ -1545,8 +1545,8 @@ namespace giac {
   };
 
 
-  // Validate an identifier's owned name record before reading its name.
-  // On failure the embedding app receives the suspect pointer as diagnostics.
+  // Reject null or low name pointers, and check the owned name record when
+  // available before reading the name. Failed ownership checks are reported.
 
   // Set (non-atomically; giac itself is single-threaded by contract) the first
   // time identifier_name_is_plausible() rejects a pointer since the flag was
