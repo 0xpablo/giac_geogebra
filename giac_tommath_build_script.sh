@@ -23,6 +23,11 @@ echo "Replaced config.h file."
 
 # Replace simpleInterface folder
 cp -r -f "$folder_path/simpleInterface" "./src/"
+# Keep the crash hardening in this fork when the private build additions are
+# copied over the bridge sources. The additions provide the other build inputs.
+git restore -- src/simpleInterface/cpp/ContextBridge.cpp \
+    src/simpleInterface/cpp/GenBridge.cpp \
+    src/simpleInterface/headers/GenBridge.hpp
 echo "Replaced simpleInterface folder."
 
 # Coppy TomMath .c and .h files
